@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from lk_token import *
-from error import *
+from error import InvalidSyntaxError
 from ast_node import *
 
 # 语法解析结果

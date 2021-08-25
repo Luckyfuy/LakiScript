@@ -10,6 +10,8 @@ class NumberNode(object):
 
     def __init__(self, token):
         self.token = token
+        self.pos_start = token.pos_start
+        self.pos_end = token.pos_end
 
     def __repr__(self):
         return f'{self.token}'
@@ -22,6 +24,8 @@ class BinaryOpNode(object):
         self.lnode = lnode
         self.token = token
         self.rnode = rnode
+        self.pos_start = lnode.pos_start
+        self.pos_end = rnode.pos_end
 
     def __repr__(self):
         return f'({self.lnode}, {self.token}, {self.rnode})'
@@ -33,6 +37,8 @@ class UnaryOpNode(object):
     def __init__(self, token, node):
         self.token = token
         self.node = node
+        self.pos_start = token.pos_start
+        self.pos_end = node.pos_end
 
     def __repr__(self):
         return f'({self.token}, {self.node})'

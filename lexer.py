@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from lk_token import *
-from position import *
-from error import *
+from position import Position
+from error import IllegalCharError
 
 # 词法分析器
 class Lexer(object):
@@ -59,6 +59,7 @@ class Lexer(object):
     def make_number(self):
         num_str = ''
         dot = False
+        pos_start = self.pos.copy()
 
         while self.current_char is not None and self.current_char in DIGITS + '.':
             if self.current_char == '.':
@@ -70,6 +71,6 @@ class Lexer(object):
                 num_str += self.current_char
             self.advance()
         if not dot:
-            return Token(T_INT, int(num_str))
+            return Token(T_INT, int(num_str), pos_start, self.pos)
         else:
-            return Token(T_FLOAT, float(num_str))
+            return Token(T_FLOAT, float(num_str), pos_start, self.pos)
