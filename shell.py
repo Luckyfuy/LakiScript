@@ -3,6 +3,9 @@
 
 import main
 
+print('LakiScript Shell')
+print()
+
 while True:
     text = input('> ')
     res, err = main.run('<stdin>', text)

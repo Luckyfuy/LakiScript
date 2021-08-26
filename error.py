@@ -37,7 +37,7 @@ class InvalidSyntaxError(Error):
         super().__init__(pos_start, pos_end, 'Invalid Syntax', detail)
 
 # 运行错误
-class RuntimeError(Error):
+class RTError(Error):
 
     def __init__(self, pos_start, pos_end, detail, context):
         super().__init__(pos_start, pos_end, 'Runtime Error', detail)

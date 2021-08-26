@@ -29,7 +29,12 @@ class Lexer(object):
             if self.current_char in (' ', '\t'):
                 self.advance()
             elif self.current_char in DIGITS:
-                tokens.append(self.make_number())
+                tokens.append(self.makeNumber())
+            elif self.current_char in LETTERS:
+                tokens.append(self.makeIdentifier())
+            elif self.current_char == '=':
+                tokens.append(Token(T_EQ, pos_start=self.pos))
+                self.advance()
             elif self.current_char == '+':
                 tokens.append(Token(T_PLUS, pos_start=self.pos))
                 self.advance()
@@ -39,6 +44,9 @@ class Lexer(object):
             elif self.current_char == '*':
                 tokens.append(Token(T_MUL, pos_start=self.pos))
                 self.advance()
+                if self.current_char == '*':
+                    tokens[-1] = Token(T_POW, pos_start=self.pos)
+                    self.advance()
             elif self.current_char == '/':
                 tokens.append(Token(T_DIV, pos_start=self.pos))
                 self.advance()
@@ -56,7 +64,7 @@ class Lexer(object):
         tokens.append(Token(T_EOF, pos_start=self.pos))
         return tokens, None
 
-    def make_number(self):
+    def makeNumber(self):
         num_str = ''
         dot = False
         pos_start = self.pos.copy()
@@ -74,3 +82,20 @@ class Lexer(object):
             return Token(T_INT, int(num_str), pos_start, self.pos)
         else:
             return Token(T_FLOAT, float(num_str), pos_start, self.pos)
+
+    def makeIdentifier(self):
+        '''
+        识别变量
+        '''
+        var_str = ''
+        pos_start = self.pos.copy()
+
+        while self.current_char is not None and self.current_char in LETTERS_DIGITS + '_':
+            var_str += self.current_char
+            self.advance()
+
+        if var_str in KEYWORDS:
+            token_type = T_KEYWORD
+        else:
+            token_type = T_IDENTIFIER
+        return Token(token_type, var_str, pos_start, self.pos)

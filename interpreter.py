@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from lk_token import *
-from error import RuntimeError
+from error import RTError
 
 # 运行结果
 class RunResult(object):
@@ -56,8 +56,15 @@ class Number(object):
     def divBy(self, num):
         if isinstance(num, Number):
             if num.value == 0:
-                return None, RuntimeError(num.pos_start, num.pos_end, 'Divisor cannot be 0', self.context)
+                return None, RTError(num.pos_start, num.pos_end, 'Divisor cannot be 0', self.context)
             return Number(self.value / num.value).setContext(self.context), None
+
+    def powBy(self, num):
+        if isinstance(num, Number):
+            return Number(self.value ** num.value).setContext(self.context), None
+
+    def copy(self):
+        return Number(self.value).setContext(self.context).setPos(self.pos_start, self.pos_end)
 
     def __repr__(self):
         return str(self.value)
@@ -69,6 +76,7 @@ class Context(object):
         self.name = name
         self.parent = parent
         self.parent_pos = parent_pos
+        self.symbol_table = None
 
 # 解释器
 class Interpreter(object):
@@ -85,6 +93,24 @@ class Interpreter(object):
 
     def noVisitMethod(self):
         raise Exception(f'No visit_{type(node).__name__}')
+
+    def visit_VarAccessNode(self, node, context):
+        res = RunResult()
+        var_name = node.name_token.value
+        value = context.symbol_table.get(var_name)
+        if value is None:
+            return res.failure(RTError(node.pos_start, node.pos_end, f'{var_name} is undefined', context))
+        value = value.copy().setPos(node.pos_start, node.pos_end)
+        return res.success(value)
+
+    def visit_VarAssignNode(self, node, context):
+        res = RunResult()
+        var_name = node.name_token.value
+        value = res.register(self.visit(node.value_node, context))
+        if res.error is not None:
+            return res
+        context.symbol_table.set(var_name, value)
+        return res.success(value)
 
     def visit_NumberNode(self, node, context):
         return RunResult().success(Number(node.token.value).setContext(context).setPos(node.pos_start, node.pos_end))
@@ -107,6 +133,10 @@ class Interpreter(object):
             result, err = left.mulBy(right)
         elif node.token.type == T_DIV:
             result, err = left.divBy(right)
+        elif node.token.type == T_POW:
+            result, err = left.powBy(right)
+        else:
+            return res.failure(RTError(node.pos_start, node.pos_end, f'{node.token.type} is not supported', context))
 
         if err is not None:
             return res.failure(err)

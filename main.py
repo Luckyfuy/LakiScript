@@ -4,6 +4,10 @@
 from lexer import Lexer
 from lk_parser import Parser
 from interpreter import Interpreter, Context
+from symbol_table import SymbolTable
+
+# 全局作用域
+global_symbol_table = SymbolTable()
 
 def run(file, text):
     lexer = Lexer(file, text)
@@ -22,5 +26,6 @@ def run(file, text):
 
     interpreter = Interpreter()
     context = Context('<program>')
+    context.symbol_table = global_symbol_table
     res = interpreter.visit(ast.node, context)
     return res.value, res.error

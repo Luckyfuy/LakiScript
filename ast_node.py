@@ -16,6 +16,29 @@ class NumberNode(object):
     def __repr__(self):
         return f'{self.token}'
 
+# 访问变量
+class VarAccessNode(object):
+
+    def __init__(self, name_token):
+        self.name_token = name_token
+        self.pos_start = name_token.pos_start
+        self.pos_end = name_token.pos_end
+
+    def __repr__(self):
+        return f'({self.name_token})'
+
+# 定义变量
+class VarAssignNode(object):
+
+    def __init__(self, name_token, value_node):
+        self.name_token = name_token
+        self.value_node = value_node
+        self.pos_start = name_token.pos_start
+        self.pos_end = name_token.pos_end
+
+    def __repr__(self):
+        return f'({self.name_token}, {self.value_node})'
+
 # 二元操作符节点
 # + - * /
 class BinaryOpNode(object):

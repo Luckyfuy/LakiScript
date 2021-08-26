@@ -11,6 +11,7 @@ class ParserResult(object):
     def __init__(self):
         self.error = None
         self.node = None
+        self.advance_cnt = 0
 
     def success(self, node):
         self.node = node
@@ -20,12 +21,14 @@ class ParserResult(object):
         self.error = error
         return self
 
+    def registerAdvancement(self):
+        self.advance_cnt += 1
+
     def register(self, res):
-        if isinstance(res, ParserResult):
-            if res.error is not None:
-                self.error = res.error
-            return res.node
-        return res
+        self.advance_cnt += res.advance_cnt
+        if res.error is not None:
+            self.error = res.error
+        return res.node
 
 # 语法解析器
 class Parser(object):
@@ -43,11 +46,19 @@ class Parser(object):
 
     '''
     BNF
-    expr -> term (( PLUS | MINUS ) term)*
+
+    expr -> KEYWORD: var IDENTIFIER EQ expr
+         -> term (( PLUS | MINUS ) term)*
+
     term -> factor (( MUL | DIV ) factor)*
-    factor -> INT | FLOAT
-           -> (PLUS | MINUS) factor
-           -> LPAREN expr RPAREN
+
+    factor -> ( PLUS | MINUS ) factor
+           -> power
+
+    power -> atom (POW factor)*
+
+    atom -> INT | FLOAT | IDENTIFIER
+         -> LPAREN expr RPAREN
     '''
     def parse(self):
         res = self.expr()
@@ -57,51 +68,108 @@ class Parser(object):
 
     def factor(self):
         '''
-        factor -> INT | FLOAT
-               -> (PLUS | MINUS) factor
-               -> LPAREN expr RPAREN
+        factor -> ( PLUS | MINUS ) factor
+               -> power
         '''
         res = ParserResult()
         token = self.current_token
 
-        if token.type in (T_INT, T_FLOAT):
-            res.register(self.advance())
-            return res.success(NumberNode(token))
-
-        elif token.type in (T_PLUS, T_MINUS):
+        if token.type in (T_PLUS, T_MINUS):
+            res.registerAdvancement()
             res.register(self.advance())
             factor = res.register(self.factor())
             if res.error is not None:
                 return res
             return res.success(UnaryOpNode(token, factor))
+        return self.power()
+
+    def power(self):
+        return self.binOp(self.atom, (T_POW, ), self.factor)
+
+    def atom(self):
+        res = ParserResult()
+        token = self.current_token
+
+        if token.type in (T_INT, T_FLOAT):
+            res.registerAdvancement()
+            self.advance()
+            return res.success(NumberNode(token))
+
+        elif token.type == T_IDENTIFIER:
+            res.registerAdvancement()
+            self.advance()
+            return res.success(VarAccessNode(token))
 
         elif token.type == T_LPAREN:
-            res.register(self.advance())
+            res.registerAdvancement()
+            self.advance()
             expr = res.register(self.expr())
             if res.error is not None:
                 return res
+
             if self.current_token.type == T_RPAREN:
-                res.register(self.advance())
+                res.registerAdvancement()
+                self.advance()
                 return res.success(expr)
             else:
                 return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected ')'"))
-        return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected int or float"))
+        return res.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier, '+', '-', '*', '/', '(' or ')'"))
+
 
     def term(self):
-        # term -> factor (( MUL | DIV ) factor)*
+        '''
+        term -> factor (( MUL | DIV ) factor)*
+        '''
         return self.binOp(self.factor, (T_MUL, T_DIV))
 
     def expr(self):
-        # expr -> term (( PLUS | MINUS ) term)*
-        return self.binOp(self.term, (T_PLUS, T_MINUS))
-
-    def binOp(self, func, ops):
-        # 递归调用，构建AST
+        '''
+        expr -> KEYWORD: var IDENTIFIER EQ expr
+             -> term (( PLUS | MINUS ) term)*
+        '''
         res = ParserResult()
-        left = res.register(func())
+
+        if self.current_token.match(T_KEYWORD, 'var'):
+            res.registerAdvancement()
+            self.advance()
+
+            if self.current_token.type != T_IDENTIFIER:
+                return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, 'Expected identifier'))
+            var_name = self.current_token
+            res.registerAdvancement()
+            self.advance()
+
+            if self.current_token.type != T_EQ:
+                return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected '='"))
+            res.registerAdvancement()
+            self.advance()
+
+            expr = res.register(self.expr())
+            if res.error is not None:
+                return res
+            return res.success(VarAssignNode(var_name, expr))
+
+        else:
+            node = res.register(self.binOp(self.term, (T_PLUS, T_MINUS)))
+            if res.error is not None:
+                return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected 'var', int, float, identifier, '+', '-' or '('"))
+            return res.success(node)
+
+    def binOp(self, func_a, ops, func_b=None):
+        # 递归调用，构建AST
+        if func_b is None:
+            func_b = func_a
+        res = ParserResult()
+
+        left = res.register(func_a())
+        if res.error is not None:
+            return res
         while self.current_token.type in ops:
             token = self.current_token
-            res.register(self.advance())
-            right = res.register(func())
+            res.registerAdvancement()
+            self.advance()
+            right = res.register(func_b())
+            if res.error is not None:
+                return res
             left = BinaryOpNode(left, token, right)
         return res.success(left)
