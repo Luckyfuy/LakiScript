@@ -1,9 +1,11 @@
 // 阶乘的递归实现
 
-func factorial(n):
-    if n == 1:
+func factorial(n) {
+    if n == 1 {
         return 1
+    }
     return n * factorial(n - 1)
+}
 
 var n = int(input())
 print(factorial(n))
@@ -12,6 +14,7 @@ print(factorial(n))
 
 var n = int(input())
 var res = 1
-for i = 1 to n:
+for i = 1 to n {
     res *= i
+}
 print(res)

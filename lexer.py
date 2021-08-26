@@ -3,7 +3,7 @@
 
 from lk_token import *
 from position import Position
-from error import IllegalCharError
+from error import IllegalCharError, ExpectedCharError
 
 # 词法分析器
 class Lexer(object):
@@ -33,8 +33,16 @@ class Lexer(object):
             elif self.current_char in LETTERS:
                 tokens.append(self.makeIdentifier())
             elif self.current_char == '=':
-                tokens.append(Token(T_EQ, pos_start=self.pos))
-                self.advance()
+                tokens.append(self.makeEqual())
+            elif self.current_char == '<':
+                tokens.append(self.makeLessThan())
+            elif self.current_char == '>':
+                tokens.append(self.makeGreaterThan())
+            elif self.current_char == '!':
+                token, err = self.makeNotEqual()
+                if err is not None:
+                    return [], err
+                tokens.append(token)
             elif self.current_char == '+':
                 tokens.append(Token(T_PLUS, pos_start=self.pos))
                 self.advance()
@@ -42,11 +50,7 @@ class Lexer(object):
                 tokens.append(Token(T_MINUS, pos_start=self.pos))
                 self.advance()
             elif self.current_char == '*':
-                tokens.append(Token(T_MUL, pos_start=self.pos))
-                self.advance()
-                if self.current_char == '*':
-                    tokens[-1] = Token(T_POW, pos_start=self.pos)
-                    self.advance()
+                tokens.append(self.makeAsterisk())
             elif self.current_char == '/':
                 tokens.append(Token(T_DIV, pos_start=self.pos))
                 self.advance()
@@ -85,7 +89,7 @@ class Lexer(object):
 
     def makeIdentifier(self):
         '''
-        识别变量
+        匹配变量名
         '''
         var_str = ''
         pos_start = self.pos.copy()
@@ -99,3 +103,69 @@ class Lexer(object):
         else:
             token_type = T_IDENTIFIER
         return Token(token_type, var_str, pos_start, self.pos)
+
+    def makeAsterisk(self):
+        '''
+        匹配*或**
+        '''
+        token_type = T_MUL
+        pos_start = self.pos.copy()
+
+        self.advance()
+        if self.current_char == '*':
+            self.advance()
+            token_type = T_POW
+        return Token(token_type, pos_start=pos_start, pos_end=self.pos)
+
+    def makeEqual(self):
+        '''
+        匹配=或==
+        '''
+        token_type = T_EQ
+        pos_start = self.pos.copy()
+
+        self.advance()
+        if self.current_char == '=':
+            self.advance()
+            token_type = T_EE
+        return Token(token_type, pos_start=pos_start, pos_end=self.pos)
+
+    def makeLessThan(self):
+        '''
+        匹配<或<=
+        '''
+        token_type = T_LT
+        pos_start = self.pos.copy()
+
+        self.advance()
+        if self.current_char == '=':
+            self.advance()
+            token_type = T_LTE
+        return Token(token_type, pos_start=pos_start, pos_end=self.pos)
+
+    def makeGreaterThan(self):
+        '''
+        匹配>或>=
+        '''
+        token_type = T_GT
+        pos_start = self.pos.copy()
+
+        self.advance()
+        if self.current_char == '=':
+            self.advance()
+            token_type = T_GTE
+        return Token(token_type, pos_start=pos_start, pos_end=self.pos)
+
+    def makeNotEqual(self):
+        '''
+        匹配!=
+        不匹配单独的!
+        '''
+        pos_start = self.pos.copy()
+
+        self.advance()
+        if self.current_char == '=':
+            self.advance()
+            return Token(T_NE, pos_start=pos_start, pos_end=self.pos), None
+        self.advance()
+        return None, ExpectedCharError(pos_start, self.pos, "The character after '!' should be '='")

@@ -48,7 +48,12 @@ class Parser(object):
     BNF
 
     expr -> KEYWORD: var IDENTIFIER EQ expr
-         -> term (( PLUS | MINUS ) term)*
+         -> comp (( KEYWORD: and | KEYWORD: or ) comp)*
+
+    comp -> KEYWORD: not comp
+         -> arith (( EE | NE | LT | GT | LTE | GTE ) arith)*
+
+    arith -> term (( PLUS | MINUS ) term)*
 
     term -> factor (( MUL | DIV ) factor)*
 
@@ -76,7 +81,7 @@ class Parser(object):
 
         if token.type in (T_PLUS, T_MINUS):
             res.registerAdvancement()
-            res.register(self.advance())
+            self.advance()
             factor = res.register(self.factor())
             if res.error is not None:
                 return res
@@ -125,7 +130,7 @@ class Parser(object):
     def expr(self):
         '''
         expr -> KEYWORD: var IDENTIFIER EQ expr
-             -> term (( PLUS | MINUS ) term)*
+             -> comp (( KEYWORD: and | KEYWORD: or ) comp)*
         '''
         res = ParserResult()
 
@@ -150,10 +155,35 @@ class Parser(object):
             return res.success(VarAssignNode(var_name, expr))
 
         else:
-            node = res.register(self.binOp(self.term, (T_PLUS, T_MINUS)))
+            node = res.register(self.binOp(self.comp, ((T_KEYWORD, 'and'), (T_KEYWORD, 'or'))))
             if res.error is not None:
-                return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected 'var', int, float, identifier, '+', '-' or '('"))
+                return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected 'var', int, float, identifier, '+', '-', '(', 'not', 'and' or 'or'"))
             return res.success(node)
+
+    def comp(self):
+        '''
+        comp -> KEYWORD: not comp
+             -> arith (( EE | NE | LT | GT | LTE | GTE ) arith)*
+        '''
+        res = ParserResult()
+
+        if self.current_token.match(T_KEYWORD, 'not'):
+            token = self.current_token
+            res.registerAdvancement()
+            self.advance()
+            node = res.register(self.comp())
+            if res.error is not None:
+                return res
+            return res.success(UnaryOpNode(token, node))
+
+        else:
+            node = res.register(self.binOp(self.arith, (T_EE, T_NE, T_LT, T_GT, T_LTE, T_GTE)))
+            if res.error is not None:
+                return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected '==', '!=', '<', '>', '<=' or '>='"))
+            return res.success(node)
+
+    def arith(self):
+        return self.binOp(self.term, (T_PLUS, T_MINUS))
 
     def binOp(self, func_a, ops, func_b=None):
         # 递归调用，构建AST
@@ -164,7 +194,7 @@ class Parser(object):
         left = res.register(func_a())
         if res.error is not None:
             return res
-        while self.current_token.type in ops:
+        while self.current_token.type in ops or (self.current_token.type, self.current_token.value) in ops:
             token = self.current_token
             res.registerAdvancement()
             self.advance()

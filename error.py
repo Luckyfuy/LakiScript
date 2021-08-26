@@ -61,3 +61,9 @@ class RTError(Error):
             pos = ctx.parent_pos
             ctx = ctx.parent
         return 'Traceback (most recent call last):\n' + res
+
+# 预期字符错误
+class ExpectedCharError(Error):
+
+    def __init__(self, pos_start, pos_end, detail):
+        super().__init__(pos_start, pos_end, 'Expected Character Error', detail)

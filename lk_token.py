@@ -22,10 +22,19 @@ T_EQ = 'EQ'
 T_POW = 'POW'
 T_IDENTIFIER = 'IDENTIFIER'
 T_KEYWORD = 'KEYWORD'
+T_EE = 'EE'
+T_NE = 'NE'
+T_LT = 'LT'
+T_GT = 'GT'
+T_LTE = 'LTE'
+T_GTE = 'GTE'
 
 # 关键字
 KEYWORDS = (
     'var',
+    'and',
+    'or',
+    'not'
 )
 
 class Token(object):

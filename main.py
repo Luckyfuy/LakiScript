@@ -3,11 +3,13 @@
 
 from lexer import Lexer
 from lk_parser import Parser
-from interpreter import Interpreter, Context
+from interpreter import Interpreter, Context, Number
 from symbol_table import SymbolTable
 
 # 全局作用域
 global_symbol_table = SymbolTable()
+global_symbol_table.set('True', Number(1))
+global_symbol_table.set('False', Number(0))
 
 def run(file, text):
     lexer = Lexer(file, text)

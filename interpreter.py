@@ -63,6 +63,41 @@ class Number(object):
         if isinstance(num, Number):
             return Number(self.value ** num.value).setContext(self.context), None
 
+    def compEE(self, num):
+        if isinstance(num, Number):
+            return Number(self.value == num.value).setContext(self.context), None
+
+    def compNE(self, num):
+        if isinstance(num, Number):
+            return Number(self.value != num.value).setContext(self.context), None
+
+    def compLT(self, num):
+        if isinstance(num, Number):
+            return Number(self.value < num.value).setContext(self.context), None
+
+    def compGT(self, num):
+        if isinstance(num, Number):
+            return Number(self.value > num.value).setContext(self.context), None
+
+    def compLTE(self, num):
+        if isinstance(num, Number):
+            return Number(self.value <= num.value).setContext(self.context), None
+
+    def compGTE(self, num):
+        if isinstance(num, Number):
+            return Number(self.value >= num.value).setContext(self.context), None
+
+    def logicAnd(self, num):
+        if isinstance(num, Number):
+            return Number(self.value and num.value).setContext(self.context), None
+
+    def logicOr(self, num):
+        if isinstance(num, Number):
+            return Number(self.value or num.value).setContext(self.context), None
+
+    def logicNot(self):
+        return Number(not self.value).setContext(self.context), None
+
     def copy(self):
         return Number(self.value).setContext(self.context).setPos(self.pos_start, self.pos_end)
 
@@ -135,6 +170,22 @@ class Interpreter(object):
             result, err = left.divBy(right)
         elif node.token.type == T_POW:
             result, err = left.powBy(right)
+        elif node.token.type == T_EE:
+            result, err = left.compEE(right)
+        elif node.token.type == T_NE:
+            result, err = left.compNE(right)
+        elif node.token.type == T_LT:
+            result, err = left.compLT(right)
+        elif node.token.type == T_GT:
+            result, err = left.compGT(right)
+        elif node.token.type == T_LTE:
+            result, err = left.compLTE(right)
+        elif node.token.type == T_GTE:
+            result, err = left.compGTE(right)
+        elif node.token.match(T_KEYWORD, 'and'):
+            result, err = left.logicAnd(right)
+        elif node.token.match(T_KEYWORD, 'or'):
+            result, err = left.logicOr(right)
         else:
             return res.failure(RTError(node.pos_start, node.pos_end, f'{node.token.type} is not supported', context))
 
@@ -151,6 +202,8 @@ class Interpreter(object):
         err = None
         if node.token.type == T_MINUS:
             num, err = num.mulBy(Number(-1))
+        elif node.token.match(T_KEYWORD, 'not'):
+            num, err = num.logicNot()
 
         if err is not None:
             return res.failure(err)
