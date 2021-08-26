@@ -44,7 +44,7 @@ class Parser(object):
     '''
     BNF
     expr -> term (( PLUS | MINUS ) term)*
-    term -> factor ( MUL | DIV ) factor)*
+    term -> factor (( MUL | DIV ) factor)*
     factor -> INT | FLOAT
            -> (PLUS | MINUS) factor
            -> LPAREN expr RPAREN
@@ -88,7 +88,7 @@ class Parser(object):
         return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected int or float"))
 
     def term(self):
-        # term -> factor ( MUL | DIV ) factor)*
+        # term -> factor (( MUL | DIV ) factor)*
         return self.binOp(self.factor, (T_MUL, T_DIV))
 
     def expr(self):

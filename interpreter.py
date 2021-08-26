@@ -120,8 +120,8 @@ class Interpreter(object):
 
         err = None
         if node.token.type == T_MINUS:
-            result, err = num.mulBy(Number(-1))
+            num, err = num.mulBy(Number(-1))
 
         if err is not None:
             return res.failure(err)
-        return res.success(result.setPos(node.pos_start, node.pos_end))
+        return res.success(num.setPos(node.pos_start, node.pos_end))

@@ -8,10 +8,17 @@ from interpreter import Interpreter, Context
 def run(file, text):
     lexer = Lexer(file, text)
     tokens, err = lexer.makeTokens()
-    print(tokens)
+    if err is not None:
+        print(err.getError())
+    else:
+        print(tokens)
 
     parser = Parser(tokens)
     ast = parser.parse()
+    if ast.error is not None:
+        print(ast.error.getError())
+    else:
+        print(ast.node)
 
     interpreter = Interpreter()
     context = Context('<program>')
