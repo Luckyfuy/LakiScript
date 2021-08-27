@@ -44,27 +44,6 @@ class Parser(object):
             self.current_token = self.tokens[self.token_index]
         return self.current_token
 
-    '''
-    BNF
-
-    expr -> KEYWORD: var IDENTIFIER EQ expr
-         -> comp (( KEYWORD: and | KEYWORD: or ) comp)*
-
-    comp -> KEYWORD: not comp
-         -> arith (( EE | NE | LT | GT | LTE | GTE ) arith)*
-
-    arith -> term (( PLUS | MINUS ) term)*
-
-    term -> factor (( MUL | DIV ) factor)*
-
-    factor -> ( PLUS | MINUS ) factor
-           -> power
-
-    power -> atom (POW factor)*
-
-    atom -> INT | FLOAT | IDENTIFIER
-         -> LPAREN expr RPAREN
-    '''
     def parse(self):
         res = self.expr()
         if res.error is None and self.current_token.type != T_EOF:
@@ -118,7 +97,14 @@ class Parser(object):
                 return res.success(expr)
             else:
                 return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected ')'"))
-        return res.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier, '+', '-', '*', '/', '(' or ')'"))
+
+        elif token.match(T_KEYWORD, 'if'):
+            if_expr = res.register(self.ifExpr())
+            if res.error is not None:
+                return res
+            return res.success(if_expr)
+
+        return res.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier or '('"))
 
 
     def term(self):
@@ -157,7 +143,7 @@ class Parser(object):
         else:
             node = res.register(self.binOp(self.comp, ((T_KEYWORD, 'and'), (T_KEYWORD, 'or'))))
             if res.error is not None:
-                return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected 'var', int, float, identifier, '+', '-', '(', 'not', 'and' or 'or'"))
+                return res
             return res.success(node)
 
     def comp(self):
@@ -179,11 +165,83 @@ class Parser(object):
         else:
             node = res.register(self.binOp(self.arith, (T_EE, T_NE, T_LT, T_GT, T_LTE, T_GTE)))
             if res.error is not None:
-                return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected '==', '!=', '<', '>', '<=' or '>='"))
+                return res
             return res.success(node)
 
     def arith(self):
         return self.binOp(self.term, (T_PLUS, T_MINUS))
+
+    def ifExpr(self):
+        '''
+        if-expr -> KEYWORD: if expr { expr* }
+                   ( KEYWORD: elif expr { expr* } )*
+                   ( KEYWORD: else { expr* } )?
+        '''
+        res = ParserResult()
+        case = [] # if + 多个elif
+        else_case = None
+
+        if not self.current_token.match(T_KEYWORD, 'if'):
+            return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected 'if'"))
+        res.registerAdvancement()
+        self.advance()
+        condition = res.register(self.expr())
+        if res.error is not None:
+            return res
+
+        if self.current_token.type != T_LBRACE:
+            return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected '{'"))
+        res.registerAdvancement()
+        self.advance()
+        expr = res.register(self.expr())
+        if res.error is not None:
+            return res
+
+        if self.current_token.type != T_RBRACE:
+            return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected '}'"))
+        res.registerAdvancement()
+        self.advance()
+
+        case.append((condition, expr))
+        while self.current_token.match(T_KEYWORD, 'elif'):
+            res.registerAdvancement()
+            self.advance()
+            condition = res.register(self.expr())
+            if res.error is not None:
+                return res
+
+            if self.current_token.type != T_LBRACE:
+                return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected '{'"))
+            res.registerAdvancement()
+            self.advance()
+            expr = res.register(self.expr())
+            if res.error is not None:
+                return res
+
+            if self.current_token.type != T_RBRACE:
+                return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected '}'"))
+            res.registerAdvancement()
+            self.advance()
+
+            case.append((condition, expr))
+
+        if self.current_token.match(T_KEYWORD, 'else'):
+            res.registerAdvancement()
+            self.advance()
+            if self.current_token.type != T_LBRACE:
+                return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected '{'"))
+            res.registerAdvancement()
+            self.advance()
+            else_case = res.register(self.expr())
+            if res.error is not None:
+                return res
+
+            if self.current_token.type != T_RBRACE:
+                return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected '}'"))
+            res.registerAdvancement()
+            self.advance()
+
+        return res.success(IfNode(case, else_case))
 
     def binOp(self, func_a, ops, func_b=None):
         # 递归调用，构建AST

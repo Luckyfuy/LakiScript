@@ -28,13 +28,18 @@ T_LT = 'LT'
 T_GT = 'GT'
 T_LTE = 'LTE'
 T_GTE = 'GTE'
+T_LBRACE = 'LBRACE'
+T_RBRACE = 'RBRACE'
 
 # 关键字
 KEYWORDS = (
     'var',
     'and',
     'or',
-    'not'
+    'not',
+    'if',
+    'elif',
+    'else'
 )
 
 class Token(object):

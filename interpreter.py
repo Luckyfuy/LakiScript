@@ -208,3 +208,25 @@ class Interpreter(object):
         if err is not None:
             return res.failure(err)
         return res.success(num.setPos(node.pos_start, node.pos_end))
+
+    def visit_IfNode(self, node, context):
+        res = RunResult()
+
+        for condition, expr in node.case:
+            condition_value = res.register(self.visit(condition, context))
+            if res.error is not None:
+                return res
+
+            if condition_value.value:
+                expr_value = res.register(self.visit(expr, context))
+                if res.error is not None:
+                    return res
+                return res.success(expr_value)
+
+        if node.else_case is not None:
+            else_value = res.register(self.visit(node.else_case, context))
+            if res.error is not None:
+                return res
+            return res.success(else_value)
+
+        return res.success(None)

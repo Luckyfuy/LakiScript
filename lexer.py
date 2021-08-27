@@ -60,6 +60,12 @@ class Lexer(object):
             elif self.current_char == ')':
                 tokens.append(Token(T_RPAREN, pos_start=self.pos))
                 self.advance()
+            elif self.current_char == '{':
+                tokens.append(Token(T_LBRACE, pos_start=self.pos))
+                self.advance()
+            elif self.current_char == '}':
+                tokens.append(Token(T_RBRACE, pos_start=self.pos))
+                self.advance()
             else:
                 pos_start = self.pos.copy()
                 char = self.current_char
@@ -89,7 +95,7 @@ class Lexer(object):
 
     def makeIdentifier(self):
         '''
-        匹配变量名
+        匹配关键字或变量名
         '''
         var_str = ''
         pos_start = self.pos.copy()
