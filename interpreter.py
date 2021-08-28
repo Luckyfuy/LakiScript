@@ -126,7 +126,7 @@ class Interpreter(object):
         method = getattr(self, method_name, self.noVisitMethod)
         return method(node, context)
 
-    def noVisitMethod(self):
+    def noVisitMethod(self, node, context):
         raise Exception(f'No visit_{type(node).__name__}')
 
     def visit_VarAccessNode(self, node, context):
@@ -228,5 +228,54 @@ class Interpreter(object):
             if res.error is not None:
                 return res
             return res.success(else_value)
+
+        return res.success(None)
+
+    def visit_ForNode(self, node, context):
+        res = RunResult()
+
+        start_value = res.register(self.visit(node.start_value_node, context))
+        if res.error is not None:
+                return res
+
+        end_value = res.register(self.visit(node.end_value_node, context))
+        if res.error is not None:
+                return res
+
+        step_value = Number(1)
+        if node.step_value_node is not None:
+            step_value = res.register(self.visit(node.step_value_node, context))
+            if res.error is not None:
+                return res
+
+        i = start_value.value
+
+        if step_value.value >= 0:
+            condition = lambda: i <= end_value.value
+        else:
+            condition = lambda: i >= end_value.value
+
+        while condition():
+            context.symbol_table.set(node.var_name_token.value, Number(i))
+            i += step_value.value
+            res.register(self.visit(node.body_node, context))
+            if res.error is not None:
+                return res
+
+        return res.success(None)
+
+    def visit_WhileNode(self, node, context):
+        res = RunResult()
+
+        while True:
+            condition = res.register(self.visit(node.condition_node, context))
+            if res.error is not None:
+                return res
+            if not condition.value:
+                break
+
+            res.register(self.visit(node.body_node, context))
+            if res.error is not None:
+                return res
 
         return res.success(None)

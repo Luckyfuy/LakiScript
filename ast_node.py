@@ -66,6 +66,7 @@ class UnaryOpNode(object):
     def __repr__(self):
         return f'({self.token}, {self.node})'
 
+# if条件语句
 class IfNode(object):
 
     def __init__(self, case, else_case):
@@ -83,3 +84,34 @@ class IfNode(object):
         if self.else_case is not None:
             result += f'    else {self.else_case}\n'
         return f'(\n{result})'
+
+# for循环
+class ForNode(object):
+
+    def __init__(self, var_name_token, start_value_node, end_value_node, step_value_node, body_node):
+        self.var_name_token = var_name_token
+        self.start_value_node = start_value_node
+        self.end_value_node = end_value_node
+        self.step_value_node = step_value_node
+        self.body_node = body_node
+        self.pos_start = var_name_token.pos_start
+        self.pos_end = body_node.pos_end
+
+    def __repr__(self):
+        result = f'(\nfor {self.var_name_token} = {self.start_value_node} to {self.end_value_node} step {self.step_value_node}\n'
+        result += f'then {self.body_node}\n)'
+        return result
+
+# while循环
+class WhileNode(object):
+
+    def __init__(self, condition_node, body_node):
+        self.condition_node = condition_node
+        self.body_node = body_node
+        self.pos_start = condition_node.pos_start
+        self.pos_end = body_node.pos_end
+
+    def __repr__(self):
+        result = f'(\nwhile {self.condition_node}\n'
+        result += f'then {self.body_node}\n)'
+        return result

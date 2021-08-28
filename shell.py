@@ -8,7 +8,7 @@ print()
 
 while True:
     text = input('> ')
-    res, err = main.run('<stdin>', text)
+    res, err = main.run('<stdin>', text, debug=True)
     if err is not None:
         print(err.getError())
     else:

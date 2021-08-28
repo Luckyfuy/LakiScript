@@ -39,7 +39,11 @@ KEYWORDS = (
     'not',
     'if',
     'elif',
-    'else'
+    'else',
+    'for',
+    'to',
+    'step',
+    'while'
 )
 
 class Token(object):

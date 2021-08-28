@@ -11,20 +11,22 @@ global_symbol_table = SymbolTable()
 global_symbol_table.set('True', Number(1))
 global_symbol_table.set('False', Number(0))
 
-def run(file, text):
+def run(file, text, debug=False):
     lexer = Lexer(file, text)
     tokens, err = lexer.makeTokens()
-    if err is not None:
-        print(err.getError())
-    else:
-        print(tokens)
+    if debug:
+        if err is not None:
+            print(err.getError())
+        else:
+            print(tokens)
 
     parser = Parser(tokens)
     ast = parser.parse()
-    if ast.error is not None:
-        print(ast.error.getError())
-    else:
-        print(ast.node)
+    if debug:
+        if ast.error is not None:
+            print(ast.error.getError())
+        else:
+            print(ast.node)
 
     interpreter = Interpreter()
     context = Context('<program>')
