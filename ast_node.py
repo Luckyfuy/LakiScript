@@ -16,6 +16,14 @@ class NumberNode(object):
     def __repr__(self):
         return f'{self.token}'
 
+# 数组节点
+class ListNode(object):
+
+    def __init__(self, element_nodes, pos_start, pos_end):
+        self.element_nodes = element_nodes
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+
 # 访问变量
 class VarAccessNode(object):
 
@@ -30,11 +38,13 @@ class VarAccessNode(object):
 # 定义变量
 class VarAssignNode(object):
 
-    def __init__(self, name_token, value_node):
+    def __init__(self, name_token, value_node, eq, define=True):
         self.name_token = name_token
         self.value_node = value_node
         self.pos_start = name_token.pos_start
         self.pos_end = name_token.pos_end
+        self.eq = eq
+        self.define = define
 
     def __repr__(self):
         return f'({self.name_token}, {self.value_node})'

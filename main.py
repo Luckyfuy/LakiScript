@@ -14,22 +14,21 @@ global_symbol_table.set('False', Number(0))
 def run(file, text, debug=False):
     lexer = Lexer(file, text)
     tokens, err = lexer.makeTokens()
+    if err is not None:
+        return None, err
     if debug:
-        if err is not None:
-            print(err.getError())
-        else:
-            print(tokens)
+        print(tokens)
 
     parser = Parser(tokens)
     ast = parser.parse()
+    if ast.error is not None:
+        return None, ast.error
     if debug:
-        if ast.error is not None:
-            print(ast.error.getError())
-        else:
-            print(ast.node)
+        print(ast.node)
 
     interpreter = Interpreter()
     context = Context('<program>')
     context.symbol_table = global_symbol_table
     res = interpreter.visit(ast.node, context)
+
     return res.value, res.error

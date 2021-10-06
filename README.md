@@ -1,7 +1,17 @@
 # LakiScript
 
+## 语法
+
 ```bnf
+statements -> NEWLINE* expr (NEWLINE+ statement)* NEWLINE*
+
+statement -> KEYWORD:return expr?
+          -> KEYWORD:continue
+          -> KEYWORD:break
+          -> expr
+
 expr -> KEYWORD:var IDENTIFIER EQ expr
+     -> IDENTIFIER ( EQ | PLUSEQ | MINUSEQ | MULEQ | DIVEQ | POWEQ ) expr
      -> comp (( KEYWORD:and | KEYWORD:or ) comp)*
 
 comp -> KEYWORD:not comp
@@ -22,12 +32,11 @@ atom -> INT | FLOAT | IDENTIFIER
      -> for-expr
      -> while-expr
 
-if-expr -> KEYWORD:if expr { expr* }
-           ( KEYWORD:elif expr { expr* } )*
-           ( KEYWORD:else { expr* } )?
+if-expr -> KEYWORD:if expr LBRACE statements RBRACE
+           ( KEYWORD:elif expr LBRACE statements RBRACE )*
+           ( KEYWORD:else LBRACE statements RBRACE )?
 
-for-expr -> KEYWORD:for IDENTIFIER EQ expr KEYWORD:to expr
-            (KEYWORD:step expr)? { expr* }
+for-expr -> KEYWORD:for IDENTIFIER EQ expr KEYWORD:to expr (KEYWORD:step expr)? LBRACE statements RBRACE
 
-while-expr -> KEYWORD:while expr { expr* }
+while-expr -> KEYWORD:while expr LBRACE statements RBRACE
 ```

@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from lk_token import *
+from lk_type import *
+from ast_node import VarAccessNode, VarAssignNode, BinaryOpNode
 from error import RTError
 
 # 运行结果
@@ -23,86 +25,6 @@ class RunResult(object):
         if res.error is not None:
             self.error = res.error
         return res.value
-
-# 数字
-class Number(object):
-
-    def __init__(self, value):
-        self.value = value
-        self.setPos()
-        self.setContext()
-
-    def setPos(self, pos_start=None, pos_end=None):
-        self.pos_start = pos_start
-        self.pos_end = pos_end
-        return self
-
-    def setContext(self, context=None):
-        self.context = context
-        return self
-
-    def addBy(self, num):
-        if isinstance(num, Number):
-            return Number(self.value + num.value).setContext(self.context), None
-
-    def subBy(self, num):
-        if isinstance(num, Number):
-            return Number(self.value - num.value).setContext(self.context), None
-
-    def mulBy(self, num):
-        if isinstance(num, Number):
-            return Number(self.value * num.value).setContext(self.context), None
-
-    def divBy(self, num):
-        if isinstance(num, Number):
-            if num.value == 0:
-                return None, RTError(num.pos_start, num.pos_end, 'Divisor cannot be 0', self.context)
-            return Number(self.value / num.value).setContext(self.context), None
-
-    def powBy(self, num):
-        if isinstance(num, Number):
-            return Number(self.value ** num.value).setContext(self.context), None
-
-    def compEE(self, num):
-        if isinstance(num, Number):
-            return Number(self.value == num.value).setContext(self.context), None
-
-    def compNE(self, num):
-        if isinstance(num, Number):
-            return Number(self.value != num.value).setContext(self.context), None
-
-    def compLT(self, num):
-        if isinstance(num, Number):
-            return Number(self.value < num.value).setContext(self.context), None
-
-    def compGT(self, num):
-        if isinstance(num, Number):
-            return Number(self.value > num.value).setContext(self.context), None
-
-    def compLTE(self, num):
-        if isinstance(num, Number):
-            return Number(self.value <= num.value).setContext(self.context), None
-
-    def compGTE(self, num):
-        if isinstance(num, Number):
-            return Number(self.value >= num.value).setContext(self.context), None
-
-    def logicAnd(self, num):
-        if isinstance(num, Number):
-            return Number(self.value and num.value).setContext(self.context), None
-
-    def logicOr(self, num):
-        if isinstance(num, Number):
-            return Number(self.value or num.value).setContext(self.context), None
-
-    def logicNot(self):
-        return Number(not self.value).setContext(self.context), None
-
-    def copy(self):
-        return Number(self.value).setContext(self.context).setPos(self.pos_start, self.pos_end)
-
-    def __repr__(self):
-        return str(self.value)
 
 # 上下文
 class Context(object):
@@ -129,6 +51,20 @@ class Interpreter(object):
     def noVisitMethod(self, node, context):
         raise Exception(f'No visit_{type(node).__name__}')
 
+    def visit_NumberNode(self, node, context):
+        return RunResult().success(Number(node.token.value).setContext(context).setPos(node.pos_start, node.pos_end))
+
+    def visit_ListNode(self, node, context):
+        res = RunResult()
+        elements = []
+
+        for i in node.element_nodes:
+            elements.append(res.register(self.visit(i, context)))
+            if res.error is not None:
+                return res
+
+        return res.success(List(elements).setContext(context).setPos(node.pos_start, node.pos_end))
+
     def visit_VarAccessNode(self, node, context):
         res = RunResult()
         var_name = node.name_token.value
@@ -141,14 +77,25 @@ class Interpreter(object):
     def visit_VarAssignNode(self, node, context):
         res = RunResult()
         var_name = node.name_token.value
+        if not node.define:
+            org_value = context.symbol_table.get(var_name)
+            if org_value is None:
+                return res.failure(RTError(node.pos_start, node.pos_end, f'{var_name} is undefined', context))
+        if node.eq == T_PLUSEQ:
+            return self.visit(VarAssignNode(node.name_token, BinaryOpNode(VarAccessNode(node.name_token), Token(T_PLUS), node.value_node), T_EQ), context)
+        elif node.eq == T_MINUSEQ:
+            return self.visit(VarAssignNode(node.name_token, BinaryOpNode(VarAccessNode(node.name_token), Token(T_MINUS), node.value_node), T_EQ), context)
+        elif node.eq == T_MULEQ:
+            return self.visit(VarAssignNode(node.name_token, BinaryOpNode(VarAccessNode(node.name_token), Token(T_MUL), node.value_node), T_EQ), context)
+        elif node.eq == T_DIVEQ:
+            return self.visit(VarAssignNode(node.name_token, BinaryOpNode(VarAccessNode(node.name_token), Token(T_DIV), node.value_node), T_EQ), context)
+        elif node.eq == T_POWEQ:
+            return self.visit(VarAssignNode(node.name_token, BinaryOpNode(VarAccessNode(node.name_token), Token(T_POW), node.value_node), T_EQ), context)
         value = res.register(self.visit(node.value_node, context))
         if res.error is not None:
             return res
         context.symbol_table.set(var_name, value)
         return res.success(value)
-
-    def visit_NumberNode(self, node, context):
-        return RunResult().success(Number(node.token.value).setContext(context).setPos(node.pos_start, node.pos_end))
 
     def visit_BinaryOpNode(self, node, context):
         res = RunResult()

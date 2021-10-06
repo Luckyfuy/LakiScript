@@ -44,16 +44,20 @@ class Lexer(object):
                     return [], err
                 tokens.append(token)
             elif self.current_char == '+':
-                tokens.append(Token(T_PLUS, pos_start=self.pos))
-                self.advance()
+                tokens.append(self.makePlus())
             elif self.current_char == '-':
-                tokens.append(Token(T_MINUS, pos_start=self.pos))
-                self.advance()
+                tokens.append(self.makeMinus())
             elif self.current_char == '*':
                 tokens.append(self.makeAsterisk())
             elif self.current_char == '/':
-                tokens.append(Token(T_DIV, pos_start=self.pos))
                 self.advance()
+                if self.current_char == '/':
+                    self.skipComment()
+                elif self.current_char == '=':
+                    tokens.append(Token(T_DIVEQ, pos_start=self.pos))
+                    self.advance()
+                else:
+                    tokens.append(Token(T_DIV, pos_start=self.pos))
             elif self.current_char == '(':
                 tokens.append(Token(T_LPAREN, pos_start=self.pos))
                 self.advance()
@@ -66,6 +70,9 @@ class Lexer(object):
             elif self.current_char == '}':
                 tokens.append(Token(T_RBRACE, pos_start=self.pos))
                 self.advance()
+            elif self.current_char in ';\n':
+                tokens.append(Token(T_NEWLINE, pos_start=self.pos))
+                self.advance()
             else:
                 pos_start = self.pos.copy()
                 char = self.current_char
@@ -73,6 +80,12 @@ class Lexer(object):
                 return [], IllegalCharError(pos_start, self.pos, f"'{char}'")
         tokens.append(Token(T_EOF, pos_start=self.pos))
         return tokens, None
+
+    def skipComment(self):
+        self.advance()
+        while self.current_char != '\n':
+            self.advance()
+        self.advance()
 
     def makeNumber(self):
         num_str = ''
@@ -110,9 +123,35 @@ class Lexer(object):
             token_type = T_IDENTIFIER
         return Token(token_type, var_str, pos_start, self.pos)
 
+    def makePlus(self):
+        '''
+        匹配+或+=
+        '''
+        token_type = T_PLUS
+        pos_start = self.pos.copy()
+
+        self.advance()
+        if self.current_char == '=':
+            self.advance()
+            token_type = T_PLUSEQ
+        return Token(token_type, pos_start=pos_start, pos_end=self.pos)
+
+    def makeMinus(self):
+        '''
+        匹配-或-=
+        '''
+        token_type = T_MINUS
+        pos_start = self.pos.copy()
+
+        self.advance()
+        if self.current_char == '=':
+            self.advance()
+            token_type = T_MINUSEQ
+        return Token(token_type, pos_start=pos_start, pos_end=self.pos)
+
     def makeAsterisk(self):
         '''
-        匹配*或**
+        匹配*或**或*=或**=
         '''
         token_type = T_MUL
         pos_start = self.pos.copy()
@@ -121,6 +160,12 @@ class Lexer(object):
         if self.current_char == '*':
             self.advance()
             token_type = T_POW
+            if self.current_char == '=':
+                self.advance()
+                token_type = T_POWEQ
+        elif self.current_char == '=':
+            self.advance()
+            token_type = T_MULEQ
         return Token(token_type, pos_start=pos_start, pos_end=self.pos)
 
     def makeEqual(self):
