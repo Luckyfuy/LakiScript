@@ -1,6 +1,6 @@
 // 阶乘的递归实现
 
-func factorial(n) {
+func factorial(n) -> {
     if n == 1 {
         return 1
     }

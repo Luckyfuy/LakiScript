@@ -26,7 +26,7 @@ def runFile(file_path):
 
     res, err = main.run(file_path, script, debug=True)
     if err is not None:
-            print(err.getError())
+        print(err.getError())
     else:
         print(res)
 
