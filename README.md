@@ -19,18 +19,21 @@ comp -> KEYWORD:not comp
 
 arith -> term (( PLUS | MINUS ) term)*
 
-term -> factor (( MUL | DIV ) factor)*
+term -> factor (( MUL | DIV | MOD ) factor)*
 
 factor -> ( PLUS | MINUS ) factor
        -> power
 
-power -> atom (POW factor)*
+power -> call (POW factor)*
+
+call -> atom ( LPAREN ( IDENTIFIER (COMMA IDENTIFIER)* )? RPAREN )?
 
 atom -> INT | FLOAT | IDENTIFIER
      -> LPAREN expr RPAREN
      -> if-expr
      -> for-expr
      -> while-expr
+     -> func-expr
 
 if-expr -> KEYWORD:if expr LBRACE statements RBRACE
            ( KEYWORD:elif expr LBRACE statements RBRACE )*
@@ -39,4 +42,7 @@ if-expr -> KEYWORD:if expr LBRACE statements RBRACE
 for-expr -> KEYWORD:for IDENTIFIER EQ expr KEYWORD:to expr (KEYWORD:step expr)? LBRACE statements RBRACE
 
 while-expr -> KEYWORD:while expr LBRACE statements RBRACE
+
+func-expr -> KEYWORD:func IDENTIFIER? LPAREN ( IDENTIFIER (COMMA IDENTIFIER)* )? RPAREN ARROW expr
+          -> KEYWORD:func IDENTIFIER? LPAREN ( IDENTIFIER (COMMA IDENTIFIER)* )? RPAREN ARROW LBRACE statements RBRACE
 ```

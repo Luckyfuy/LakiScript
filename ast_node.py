@@ -125,3 +125,55 @@ class WhileNode(object):
         result = f'(\nwhile {self.condition_node}\n'
         result += f'then {self.body_node}\n)'
         return result
+
+# 定义函数
+class FuncNode(object):
+
+    def __init__(self, name_token, arg_name_tokens, body_node, auto_return):
+        self.name_token = name_token
+        self.arg_name_tokens = arg_name_tokens
+        self.body_node = body_node
+        self.auto_return = auto_return
+
+        if name_token is not None:
+            self.pos_start = name_token.pos_start
+        elif len(arg_name_tokens) > 0:
+            self.pos_start = arg_name_tokens[0].pos_start
+        else:
+            self.pos_start = body_node.pos_start
+        self.pos_end = body_node.pos_end
+
+# 调用函数
+class CallNode(object):
+
+    def __init__(self, func_node, arg_nodes):
+        self.func_node = func_node
+        self.arg_nodes = arg_nodes
+
+        self.pos_start = func_node.pos_start
+        if len(arg_nodes) > 0:
+            self.pos_end = arg_nodes[-1].pos_end
+        else:
+            self.pos_end = func_node.pos_end
+
+# return
+class ReturnNode(object):
+
+    def __init__(self, node, pos_start, pos_end):
+        self.node = node
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+
+# continue
+class ContinueNode(object):
+
+    def __init__(self, pos_start, pos_end):
+        self.pos_start = pos_start
+        self.pos_end = pos_end
+
+# break
+class BreakNode(object):
+
+    def __init__(self, pos_start, pos_end):
+        self.pos_start = pos_start
+        self.pos_end = pos_end

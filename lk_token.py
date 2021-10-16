@@ -11,32 +11,37 @@ LETTERS_DIGITS = LETTERS + DIGITS
 # 类型
 T_INT = 'INT'
 T_FLOAT = 'FLOAT'
-T_PLUS = 'PLUS'
-T_MINUS = 'MINUS'
-T_MUL = 'MUL'
-T_DIV = 'DIV'
-T_LPAREN = 'LPAREN'
-T_RPAREN = 'RPAREN'
-T_EOF = 'EOF' # 终止符
-T_EQ = 'EQ'
-T_POW = 'POW'
+T_PLUS = 'PLUS' # +
+T_MINUS = 'MINUS' # -
+T_MUL = 'MUL' # *
+T_DIV = 'DIV' # /
+T_POW = 'POW' # **
+T_MOD = 'MOD' # %
+T_EQ = 'EQ' # =
+T_PLUSEQ = 'PLUSEQ' # +=
+T_MINUSEQ = 'MINUSEQ' # -=
+T_MULEQ = 'MULEQ' # *=
+T_DIVEQ = 'DIVEQ' # /=
+T_POWEQ = 'POWEQ' # **=
+T_MODEQ = 'MODEQ' # %=
+T_EE = 'EE' # ==
+T_NE = 'NE' # !=
+T_LT = 'LT' # <
+T_GT = 'GT' # >
+T_LTE = 'LTE' # <=
+T_GTE = 'GTE' # >=
+T_LPAREN = 'LPAREN' # (
+T_RPAREN = 'RPAREN' # )
+T_LBRACE = 'LBRACE' # {
+T_RBRACE = 'RBRACE' # }
 T_IDENTIFIER = 'IDENTIFIER'
 T_KEYWORD = 'KEYWORD'
-T_EE = 'EE'
-T_NE = 'NE'
-T_LT = 'LT'
-T_GT = 'GT'
-T_LTE = 'LTE'
-T_GTE = 'GTE'
-T_LBRACE = 'LBRACE'
-T_RBRACE = 'RBRACE'
-T_NEWLINE = 'NEWLINE'
-T_PLUSEQ = 'T_PLUSEQ'
-T_MINUSEQ = 'T_MINUSEQ'
-T_MULEQ = 'T_MULEQ'
-T_DIVEQ = 'T_DIVEQ'
-T_POWEQ = 'T_POWEQ'
-EQS = (T_EQ, T_PLUSEQ, T_MINUSEQ, T_MULEQ, T_DIVEQ, T_POWEQ)
+T_COMMA = 'COMMA' # ,
+T_ARROW = 'ARROW' # ->
+T_NEWLINE = 'NEWLINE' # \n ;
+T_EOF = 'EOF' # 终止符
+
+EQS = (T_EQ, T_PLUSEQ, T_MINUSEQ, T_MULEQ, T_DIVEQ, T_POWEQ, T_MODEQ)
 
 # 关键字
 KEYWORDS = (
@@ -50,7 +55,11 @@ KEYWORDS = (
     'for',
     'to',
     'step',
-    'while'
+    'while',
+    'func',
+    'return',
+    'continue',
+    'break'
 )
 
 class Token(object):

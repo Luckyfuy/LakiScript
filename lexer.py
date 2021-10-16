@@ -58,6 +58,8 @@ class Lexer(object):
                     self.advance()
                 else:
                     tokens.append(Token(T_DIV, pos_start=self.pos))
+            elif self.current_char == '%':
+                tokens.append(self.makeMod())
             elif self.current_char == '(':
                 tokens.append(Token(T_LPAREN, pos_start=self.pos))
                 self.advance()
@@ -69,6 +71,10 @@ class Lexer(object):
                 self.advance()
             elif self.current_char == '}':
                 tokens.append(Token(T_RBRACE, pos_start=self.pos))
+                tokens.append(Token(T_NEWLINE, pos_start=self.pos))
+                self.advance()
+            elif self.current_char == ',':
+                tokens.append(Token(T_COMMA, pos_start=self.pos))
                 self.advance()
             elif self.current_char in ';\n':
                 tokens.append(Token(T_NEWLINE, pos_start=self.pos))
@@ -138,7 +144,7 @@ class Lexer(object):
 
     def makeMinus(self):
         '''
-        匹配-或-=
+        匹配-或-=或->
         '''
         token_type = T_MINUS
         pos_start = self.pos.copy()
@@ -147,6 +153,9 @@ class Lexer(object):
         if self.current_char == '=':
             self.advance()
             token_type = T_MINUSEQ
+        elif self.current_char == '>':
+            self.advance()
+            token_type = T_ARROW
         return Token(token_type, pos_start=pos_start, pos_end=self.pos)
 
     def makeAsterisk(self):
@@ -166,6 +175,19 @@ class Lexer(object):
         elif self.current_char == '=':
             self.advance()
             token_type = T_MULEQ
+        return Token(token_type, pos_start=pos_start, pos_end=self.pos)
+
+    def makeMod(self):
+        '''
+        匹配%或%=
+        '''
+        token_type = T_MOD
+        pos_start = self.pos.copy()
+
+        self.advance()
+        if self.current_char == '=':
+            self.advance()
+            token_type = T_MODEQ
         return Token(token_type, pos_start=pos_start, pos_end=self.pos)
 
     def makeEqual(self):
