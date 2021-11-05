@@ -24,11 +24,11 @@ def runFile(file_path):
         print(f'Fail to load script {file_path}, error: {e}')
         raise
 
-    res, err = main.run(file_path, script, debug=True)
+    res, err = main.run(file_path, script, debug=False)
     if err is not None:
         print(err.getError())
-    else:
-        print(res)
+    # else:
+    #     print(res)
 
 if len(sys.argv) > 1:
     file_path = sys.argv[1]

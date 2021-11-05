@@ -86,6 +86,9 @@ class Interpreter(object):
     def visit_NumberNode(self, node, context):
         return RunResult().success(Number(node.token.value).setContext(context).setPos(node.pos_start, node.pos_end))
 
+    def visit_StringNode(self, node, context):
+        return RunResult().success(String(node.token.value).setContext(context).setPos(node.pos_start, node.pos_end))
+
     def visit_ListNode(self, node, context):
         res = RunResult()
         elements = []

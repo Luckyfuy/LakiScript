@@ -18,8 +18,8 @@ def run(file, text, debug=False):
     ast = parser.parse()
     if ast.error is not None:
         return None, ast.error
-    if debug:
-        print(ast.node)
+    # if debug:
+    #     print(ast.node)
 
     interpreter = Interpreter()
     context = Context('<program>')

@@ -32,6 +32,8 @@ class Lexer(object):
                 tokens.append(self.makeNumber())
             elif self.current_char in LETTERS:
                 tokens.append(self.makeIdentifier())
+            elif self.current_char == '\'':
+                tokens.append(self.makeString())
             elif self.current_char == '=':
                 tokens.append(self.makeEqual())
             elif self.current_char == '<':
@@ -111,6 +113,30 @@ class Lexer(object):
             return Token(T_INT, int(num_str), pos_start, self.pos)
         else:
             return Token(T_FLOAT, float(num_str), pos_start, self.pos)
+
+    def makeString(self):
+        string = ''
+        pos_start = self.pos.copy()
+        escape_char = False
+        escape_chars = {
+            'n': '\n',
+            't': '\t'
+        }
+
+        self.advance()
+        while self.current_char is not None and (self.current_char != '\'' or escape_char):
+            if escape_char:
+                string += escape_chars.get(self.current_char, self.current_char)
+                escape_char = False
+            else:
+                if self.current_char == '\\':
+                    escape_char = True
+                else:
+                    string += self.current_char
+            self.advance()
+
+        self.advance()
+        return Token(T_STRING, string, pos_start, self.pos)
 
     def makeIdentifier(self):
         '''

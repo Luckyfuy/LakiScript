@@ -291,7 +291,7 @@ class Parser(object):
 
     def atom(self):
         '''
-        atom -> INT | FLOAT | IDENTIFIER
+        atom -> INT | FLOAT | STRING | IDENTIFIER
              -> LPAREN expr RPAREN
              -> if-expr
              -> for-expr
@@ -305,6 +305,11 @@ class Parser(object):
             res.registerAdvancement()
             self.advance()
             return res.success(NumberNode(token))
+
+        elif token.type == T_STRING:
+            res.registerAdvancement()
+            self.advance()
+            return res.success(StringNode(token))
 
         elif token.type == T_IDENTIFIER:
             res.registerAdvancement()
