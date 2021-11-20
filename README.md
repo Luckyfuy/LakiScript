@@ -30,10 +30,13 @@ call -> atom ( LPAREN ( IDENTIFIER (COMMA IDENTIFIER)* )? RPAREN )?
 
 atom -> INT | FLOAT | STRING | IDENTIFIER
      -> LPAREN expr RPAREN
+     -> list-expr
      -> if-expr
      -> for-expr
      -> while-expr
      -> func-expr
+
+list-expr -> LBRACKET ( expr (COMMA expr)* )? RBRACKET
 
 if-expr -> KEYWORD:if expr LBRACE statements RBRACE
            ( KEYWORD:elif expr LBRACE statements RBRACE )*

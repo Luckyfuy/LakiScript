@@ -293,6 +293,7 @@ class Parser(object):
         '''
         atom -> INT | FLOAT | STRING | IDENTIFIER
              -> LPAREN expr RPAREN
+             -> list-expr
              -> if-expr
              -> for-expr
              -> while-expr
@@ -315,6 +316,12 @@ class Parser(object):
             res.registerAdvancement()
             self.advance()
             return res.success(VarAccessNode(token))
+
+        elif token.type == T_LBRACKET:
+            list_expr = res.register(self.listExpr())
+            if res.error is not None:
+                return res
+            return res.success(list_expr)
 
         elif token.type == T_LPAREN:
             res.registerAdvancement()
@@ -355,6 +362,41 @@ class Parser(object):
             return res.success(func_expr)
 
         return res.failure(InvalidSyntaxError(token.pos_start, token.pos_end, "Expected int, float, identifier or '('"))
+
+    def listExpr(self):
+        '''
+        list-expr -> LBRACKET ( expr (COMMA expr)* )? RBRACKET
+        '''
+        res = ParserResult()
+        elements = []
+        pos_start = self.current_token.pos_start.copy()
+
+        if self.current_token.type != T_LBRACKET:
+            return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected '['"))
+        res.registerAdvancement()
+        self.advance()
+
+        if self.current_token.type == T_RBRACKET:
+            res.registerAdvancement()
+            self.advance()
+        else:
+            elements.append(res.register(self.expr()))
+            if res.error is not None:
+                return res
+
+            while self.current_token.type == T_COMMA:
+                res.registerAdvancement()
+                self.advance()
+                elements.append(res.register(self.expr()))
+                if res.error is not None:
+                    return res
+
+            if self.current_token.type != T_RBRACKET:
+                return res.failure(InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected ',' or ']'"))
+            res.registerAdvancement()
+            self.advance()
+
+        return res.success(ListNode(elements, pos_start, self.current_token.pos_end.copy()))
 
     def ifExpr(self):
         '''

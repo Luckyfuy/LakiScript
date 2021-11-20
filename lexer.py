@@ -75,6 +75,12 @@ class Lexer(object):
                 tokens.append(Token(T_RBRACE, pos_start=self.pos))
                 tokens.append(Token(T_NEWLINE, pos_start=self.pos))
                 self.advance()
+            elif self.current_char == '[':
+                tokens.append(Token(T_LBRACKET, pos_start=self.pos))
+                self.advance()
+            elif self.current_char == ']':
+                tokens.append(Token(T_RBRACKET, pos_start=self.pos))
+                self.advance()
             elif self.current_char == ',':
                 tokens.append(Token(T_COMMA, pos_start=self.pos))
                 self.advance()

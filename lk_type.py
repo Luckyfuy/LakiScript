@@ -184,6 +184,33 @@ class List(Value):
         super().__init__()
         self.elements = elements
 
+    def addBy(self, other):
+        if isinstance(other, List):
+            return List(self.elements + other.elements).setContext(self.context), None
+        else:
+            return None, self.illegalOperation(other)
+
+    def mulBy(self, other):
+        if isinstance(other, Number):
+            return List(self.elements * other.value).setContext(self.context), None
+        else:
+            return None, self.illegalOperation(other)
+
+    def compEE(self, other):
+        if isinstance(other, List):
+            return Number(self.elements == other.elements).setContext(self.context), None
+        else:
+            return None, self.illegalOperation(other)
+
+    def compNE(self, other):
+        if isinstance(other, List):
+            return Number(self.elements != other.elements).setContext(self.context), None
+        else:
+            return None, self.illegalOperation(other)
+
+    def copy(self):
+        return List(self.elements).setContext(self.context).setPos(self.pos_start, self.pos_end)
+
     def __str__(self):
         return ', '.join([str(i) for i in self.elements])
 
