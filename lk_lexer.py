@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from lk_token import *
-from position import Position
-from error import IllegalCharError, ExpectedCharError
+from lk_position import Position
+from lk_error import IllegalCharError, ExpectedCharError
 
 # 词法分析器
 class Lexer(object):

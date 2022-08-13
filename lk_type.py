@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from error import *
-from symbol_table import *
-import interpreter
+from lk_error import *
+from lk_symbol_table import *
+import lk_interpreter
 
 import math
 
@@ -228,9 +228,9 @@ class Function(Value):
         self.auto_return = auto_return
 
     def execute(self, args, itp):
-        res = interpreter.RunResult()
+        res = lk_interpreter.RunResult()
 
-        new_ctx = interpreter.Context(self.name, self.context, self.pos_start)
+        new_ctx = lk_interpreter.Context(self.name, self.context, self.pos_start)
         new_ctx.symbol_table = SymbolTable(new_ctx.parent.symbol_table)
 
         if len(args) > len(self.arg_name):
@@ -263,9 +263,9 @@ class BuiltinFunction(Function):
         super().__init__(name, None, None, None)
 
     def execute(self, args, _):
-        res = interpreter.RunResult()
+        res = lk_interpreter.RunResult()
 
-        new_ctx = interpreter.Context(self.name, self.context, self.pos_start)
+        new_ctx = lk_interpreter.Context(self.name, self.context, self.pos_start)
         new_ctx.symbol_table = SymbolTable()
 
         method_name = f'execute_{self.name}'
@@ -300,23 +300,23 @@ class BuiltinFunction(Function):
 
     def execute_print(self, ctx):
         print(ctx.symbol_table.get('value').value)
-        return interpreter.RunResult().success(Number.null)
+        return lk_interpreter.RunResult().success(Number.null)
     execute_print.arg_name = ['value']
 
     def execute_input(self, ctx):
-        return interpreter.RunResult().success(String(input()))
+        return lk_interpreter.RunResult().success(String(input()))
     execute_input.arg_name = []
 
     def execute_int(self, ctx):
         value = ctx.symbol_table.get('value')
         try:
-            return interpreter.RunResult().success(Number(int(value.value)))
+            return lk_interpreter.RunResult().success(Number(int(value.value)))
         except ValueError:
-            return interpreter.RunResult().failure(RTError(value.pos_start, value.pos_end, f'{value} cannot be converted to an int', value.context))
+            return lk_interpreter.RunResult().failure(RTError(value.pos_start, value.pos_end, f'{value} cannot be converted to an int', value.context))
     execute_int.arg_name = ['value']
 
     def execute_str(self, ctx):
-        return interpreter.RunResult().success(String(str(ctx.symbol_table.get('value').value)))
+        return lk_interpreter.RunResult().success(String(str(ctx.symbol_table.get('value').value)))
     execute_str.arg_name = ['value']
 
 BuiltinFunction.print = BuiltinFunction('print')

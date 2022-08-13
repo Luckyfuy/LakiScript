@@ -5,9 +5,6 @@
 符号表
 '''
 
-from typing import ValuesView
-
-
 class SymbolTable(object):
 
     def __init__(self, parent=None):

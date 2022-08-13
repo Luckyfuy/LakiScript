@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from lk_token import *
-from error import InvalidSyntaxError
-from ast_node import *
+from lk_error import InvalidSyntaxError
+from lk_ast_node import *
 
 # 语法解析结果
 class ParserResult(object):

@@ -3,8 +3,8 @@
 
 from lk_token import *
 from lk_type import *
-from ast_node import VarAccessNode, VarAssignNode, BinaryOpNode
-from error import RTError
+from lk_ast_node import VarAccessNode, VarAssignNode, BinaryOpNode
+from lk_error import RTError
 
 # 运行结果
 class RunResult(object):

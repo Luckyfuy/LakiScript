@@ -11,22 +11,22 @@ statement -> KEYWORD:return expr?
           -> expr
 
 expr -> KEYWORD:var IDENTIFIER EQ expr
-     -> IDENTIFIER ( EQ | PLUSEQ | MINUSEQ | MULEQ | DIVEQ | POWEQ ) expr
-     -> comp (( KEYWORD:and | KEYWORD:or ) comp)*
+     -> IDENTIFIER (EQ | PLUSEQ | MINUSEQ | MULEQ | DIVEQ | POWEQ) expr
+     -> comp ((KEYWORD:and | KEYWORD:or) comp)*
 
 comp -> KEYWORD:not comp
-     -> arith (( EE | NE | LT | GT | LTE | GTE ) arith)*
+     -> arith ((EE | NE | LT | GT | LTE | GTE) arith)*
 
-arith -> term (( PLUS | MINUS ) term)*
+arith -> term ((PLUS | MINUS) term)*
 
-term -> factor (( MUL | DIV | MOD ) factor)*
+term -> factor ((MUL | DIV | MOD) factor)*
 
-factor -> ( PLUS | MINUS ) factor
+factor -> (PLUS | MINUS) factor
        -> power
 
 power -> call (POW factor)*
 
-call -> atom ( LPAREN ( IDENTIFIER (COMMA IDENTIFIER)* )? RPAREN )?
+call -> atom (LPAREN (IDENTIFIER (COMMA IDENTIFIER)*)? RPAREN)?
 
 atom -> INT | FLOAT | STRING | IDENTIFIER
      -> LPAREN expr RPAREN
@@ -36,16 +36,16 @@ atom -> INT | FLOAT | STRING | IDENTIFIER
      -> while-expr
      -> func-expr
 
-list-expr -> LBRACKET ( expr (COMMA expr)* )? RBRACKET
+list-expr -> LBRACKET (expr (COMMA expr)*)? RBRACKET
 
 if-expr -> KEYWORD:if expr LBRACE statements RBRACE
-           ( KEYWORD:elif expr LBRACE statements RBRACE )*
-           ( KEYWORD:else LBRACE statements RBRACE )?
+           (KEYWORD:elif expr LBRACE statements RBRACE)*
+           (KEYWORD:else LBRACE statements RBRACE)?
 
 for-expr -> KEYWORD:for IDENTIFIER EQ expr KEYWORD:to expr (KEYWORD:step expr)? LBRACE statements RBRACE
 
 while-expr -> KEYWORD:while expr LBRACE statements RBRACE
 
-func-expr -> KEYWORD:func IDENTIFIER? LPAREN ( IDENTIFIER (COMMA IDENTIFIER)* )? RPAREN ARROW expr
-          -> KEYWORD:func IDENTIFIER? LPAREN ( IDENTIFIER (COMMA IDENTIFIER)* )? RPAREN ARROW LBRACE statements RBRACE
+func-expr -> KEYWORD:func IDENTIFIER? LPAREN (IDENTIFIER (COMMA IDENTIFIER)*)? RPAREN ARROW expr
+          -> KEYWORD:func IDENTIFIER? LPAREN (IDENTIFIER (COMMA IDENTIFIER)*)? RPAREN ARROW LBRACE statements RBRACE
 ```

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from lk_type import Number, BuiltinFunction
-from symbol_table import SymbolTable
+from lk_symbol_table import SymbolTable
 
 global_symbol_table = SymbolTable()
 
